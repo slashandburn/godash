@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 )
@@ -9,17 +10,22 @@ import (
 type Hello struct{}
 
 func (h Hello) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-  fmt.Fprint(w, "Hello!")
+	fmt.Fprint(w, "Hello!")
 }
 
 func main() {
-  fs := http.FileServer(http.Dir("assets"))
-  http.Handle("/assets/", http.StripPrefix("/assets/", fs))
-  http.Handle("/", fs)
+	fs := http.FileServer(http.Dir("assets"))
+	http.Handle("/assets/", http.StripPrefix("/assets/", fs))
+	http.HandleFunc("/", rootHandler)
 
-  log.Println("Listening...")
-  var h Hello
-  http.ListenAndServe(":3000", h)
+	log.Println("Listening...")
+
+	http.ListenAndServe(":3000", nil)
+}
+
+func rootHandler(w http.ResponseWriter, r *http.Request) {
+	t, _ := template.ParseFiles("views/layout.html.tmpl")
+	t.Execute(w, nil)
 }
 
 // func main() {
